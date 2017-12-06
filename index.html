@@ -57,11 +57,11 @@ $.ajax({
 
     // Set the global dictionary value with the dictionary split into an array
     dict = data.split("\n");
-
     init();
   },
   error: function () {
     console.log("dictionary.txt didn't load properly!");
+    init();
   }
 });
 
