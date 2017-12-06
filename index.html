@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js">
+  </script>
+
+  <title>Hangman</title>
+  <style>
+
+    @import url('https://fonts.googleapis.com/css?family=Cabin+Sketch:400,700');
+
+    body { 
+      font-family: 'Cabin Sketch', 'Helvetica', sans-serif;
+      font-size: 2.2em;
+      background-color: #eee;
+      display:flex;
+      flex-direction:column;
+      align-items: center;
+      justify-content: center;
+      height: 97vh;
+      overflow-y: scroll;
+      margin: 0;
+    }
+    
+    #guessbox {
+      border: 2px solid #777;
+      padding: 7px;
+      outline: none;
+      font-size: 0.9em;
+    }
+
+  </style>
+</head>
+<body>
+  
+  <h1 style= "text-align:center; padding: 0; margin: 0;">Welcome To Hangman!!</h1>
+  <h5 style="color:#b00; padding: 0;"> We were nice enough to give you 10 guesses!</h5>
+
+  <canvas id="myCanvas"></canvas>
+
+  <div id="hidden-word"></div>
+  <div style="margin: 0.5em;">Guess a letter: <input size="1" maxlength="1" autofocus id="guessbox">
+  </div>
+  <div id="output"><br>
+  </div>
+
+  <script>
+
+var dict;
+
+// Make an AJAX request to the server for the dictionary.txt file
+$.ajax({
+  url: "dictionary.txt",
+  type: "get",
+  dataType: "text",
+  success: function (data) {
+
+    // Set the global dictionary value with the dictionary split into an array
+    dict = data.split("\n");
+
+    init();
+  },
+  error: function () {
+    console.log("dictionary.txt didn't load properly!");
+  }
+});
+
+
+var c = document.getElementById("myCanvas");
+var output = document.getElementById("output");
+var guessBox = document.getElementById("guessbox");
+var hiddenBox = document.getElementById("hidden-word");
+c.width=170;
+c.height=220;
+var ctx = c.getContext("2d");
+ctx.lineWidth = 3;
+
+
+var word;
+var hiddenWord;
+var mistakes;
+var missed;
+
+function init() {
+  missed = [];
+  word = dict[Math.random()*dict.length|0].toLowerCase().trim() || "watermelon";
+  hiddenWord  = word.replace(/./g, "_");
+  mistakes = 0;
+  hiddenBox.innerText = hiddenWord;
+  drawPerson(mistakes);
+}
+
+function guess(letter) {
+  let correct = false;
+  
+  for (let i = 0; i < word.length; i++) {
+    if (word[i] === letter) {
+      var arr = hiddenWord.split("");
+      arr[i] = letter;
+      hiddenWord = arr.join("");
+      correct = true;
+    }
+  }
+  
+  return correct;
+}
+
+guessBox.addEventListener("keydown", function (e) {
+  if (e.keyCode === 13 && e.target.value.length === 1) {
+
+    if (!guess(e.target.value)) {
+      mistakes++;
+      missed.push(e.target.value);
+      drawPerson(mistakes);
+    }
+    
+    if (word === hiddenWord) {
+      output.innerText="YOU WIN!! The word was " + word;
+      init();
+    } else if (mistakes > 9) {
+      output.innerText="Sorry, you weren't able to guess the" + word + " !";
+      init();
+    }
+    else if (missed.length) {
+      output.innerText = "Missed letters: " + missed.join(" ");
+    }
+    else {
+      output.innerHTML = "<br>";
+    }
+    
+    e.target.value = "";
+    //output.innerHTML = e.key;
+    hiddenBox.innerText = hiddenWord;
+  }
+
+});
+
+function drawPerson(amount) { 
+  ctx.clearRect(0,0,c.width,c.height);
+  //the line that connects the head to hang 
+  if (amount >= 1){
+    ctx.beginPath();
+    ctx.moveTo(8,10);
+    ctx.lineTo(100,10);
+    ctx.stroke();
+  }
+  //the other line that connects the head  
+  if (amount >= 2){
+    ctx.beginPath();
+    ctx.moveTo(100,8);
+    ctx.lineTo(100,40);
+    ctx.stroke();
+  }
+  //the head
+   if (amount >= 3){
+    ctx.beginPath();
+    ctx.arc(99,60,20,0,2*Math.PI);
+    ctx.stroke(); 
+  }
+ 
+  // the stomach/the line that connects with the arm and legs
+  if (amount >= 4){
+    ctx.beginPath();
+    ctx.moveTo(100,80);
+    ctx.lineTo(100,150);
+    ctx.stroke();
+  }
+  //left arm
+  if (amount >= 5){
+    ctx.beginPath();
+    ctx.moveTo(45,100);
+    ctx.lineTo(100,90);
+    ctx.stroke();
+  }
+
+  //right arm
+  if (amount >= 6){
+    ctx.beginPath();
+    ctx.moveTo(155,100);
+    ctx.lineTo(100,90);
+    ctx.stroke();  
+  }
+  
+  //left leg
+  if (amount >= 7){
+    ctx.beginPath();
+    ctx.moveTo(100,150);
+    ctx.lineTo(70,190);
+    ctx.stroke();  
+  }
+  
+  //right leg
+  if(amount >= 8){
+    ctx.beginPath();
+    ctx.moveTo(130,190);
+    ctx.lineTo(100,150);
+    ctx.stroke();  
+  }
+  
+  //the stand next to the line on top
+  if (amount >= 9){
+    ctx.beginPath();
+    ctx.moveTo(10,10);
+    ctx.lineTo(10,199);
+    ctx.stroke();    
+  }
+  
+  //the bottom of the stand
+  if (amount >= 10){
+    ctx.beginPath();
+    ctx.moveTo(0,200);
+    ctx.lineTo(20,200);
+    ctx.stroke();
+  }
+}
+
+  </script>
+</body>
+</html>
